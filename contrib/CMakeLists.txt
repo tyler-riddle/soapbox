@@ -157,7 +157,14 @@ ExternalProject_Add(
     INSTALL_COMMAND $(MAKE) install
 )
 
-list(APPEND FDG_DEBIAN_PACKAGES libssl-dev)
+list(APPEND SOAPBOX_CONTRIB_NGINX_PACKAGES libssl-dev)
+
+add_custom_target(
+    contrib-nginx-install-packages
+    COMMAND ${SOAPBOX_CONTRIB_APT_INSTALL} ${SOAPBOX_CONTRIB_NGINX_PACKAGES}
+)
+
+add_dependencies(contrib-install-packages contrib-nginx-install-packages)
 
 ExternalProject_Add(
     contrib-nginx
