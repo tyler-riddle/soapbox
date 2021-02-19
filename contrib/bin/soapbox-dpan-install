@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec soapbox-cpan-install --resolver 02packages,file://"${SOAPBOX_DPAN}" "$@"

@@ -1,0 +1,6 @@
+#!/usr/bin/env perl
+
+use Soapbox::Perl;
+
+use Soapbox::App::Publish::GeneratePodcast;
+Soapbox::App::Publish::GeneratePodcast->new->main;

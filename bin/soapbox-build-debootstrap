@@ -1,0 +1,200 @@
+#!/usr/bin/env perl
+
+# This file should work with any perl interpreter
+# so it can be called by things that don't need
+# to have any Soapbox project library directories
+# or other resources
+
+use strict;
+use warnings;
+use v5.10;
+
+use Carp qw(confess);
+use File::Basename 'dirname';
+use Getopt::Long qw(:config pass_through);
+
+main();
+
+sub main {
+    my %opts = parse_argv();
+    our ($VALIDATE_ROOT, $TEST_ROOT_EXT, $TEST_ROOT_INT);
+    my $run_all = 1;
+
+    if (grep { /^only_/ && $opts{$_} } keys %opts) {
+        $run_all = 0;
+    }
+
+    if ($opts{purge} || $opts{only_purge}) {
+        purge_validate_root();
+    } elsif (-e $VALIDATE_ROOT && $run_all) {
+        die "Build root already exists: add --purge to remove it" unless $opts{purge};
+        purge_validate_root();
+    }
+
+    run_debootstrap(%opts) if $run_all || $opts{only_debootstrap};
+    clone_to_validate_root($opts{branch}) if $run_all || $opts{only_clone};
+    run_script(%opts) if $run_all || $opts{only_run};
+    purge_validate_root() if $opts{clean} || $opts{only_clean};
+}
+
+sub parse_argv {
+    our ($VALIDATE_ROOT, $TEST_ROOT_EXT, $TEST_ROOT_INT, $ARCHIVE_PATH);
+
+    my %opts = (
+        target => 'test',
+        branch => 'HEAD',
+        suite => 'stable',
+        mirror => 'http://deb.debian.org/debian',
+        purge => 0,
+    );
+
+    GetOptions(
+        'clean' => \$opts{clean},
+        'purge' => \$opts{purge},
+        'branch=s' => \$opts{branch},
+        'mirror=s' => \$opts{mirror},
+        'suite=s' => \$opts{suite},
+        'target=s' => \$opts{target},
+        'root=s' => \$opts{root},
+        'jobs|j=i' => \$opts{jobs},
+
+        'only-purge' => \$opts{only_purge},
+        'only-debootstrap' => \$opts{only_debootstrap},
+        'only-clone' => \$opts{only_clone},
+        'only-run' => \$opts{only_run},
+        'only-clean' => \$opts{only_clean},
+    ) or die "invalid arguments";
+
+    die "root is a required argument" unless defined $opts{root};
+    die "branch is a required argument" unless defined $opts{branch};
+
+    $VALIDATE_ROOT = $opts{root};
+    delete $opts{root};
+
+    $TEST_ROOT_INT = "/root/soapbox";
+    $TEST_ROOT_EXT = "$VALIDATE_ROOT/$TEST_ROOT_INT";
+
+    return %opts;
+}
+
+sub anything_in {
+    my ($dir) = @_;
+
+    return 0 unless -e $dir;
+    opendir(my $dirh, $dir) or die "opendir(): $!";
+
+    if (grep { $_ ne '.' && $_ ne '..'} readdir($dirh)) {
+        return 1;
+    }
+
+    return 0;
+}
+
+sub purge_validate_root {
+    our $VALIDATE_ROOT;
+
+    # it's possible for debootstrap to leave these mounts laying around
+    # if it is aborted in the middle of running
+    command('umount', "$VALIDATE_ROOT/proc") if anything_in("$VALIDATE_ROOT/proc");
+    command('umount', "$VALIDATE_ROOT/sys") if anything_in("$VALIDATE_ROOT/sys");
+
+    command('rm', '-rf', $VALIDATE_ROOT);
+}
+
+sub run_debootstrap {
+    my (%opts) = @_;
+    our $VALIDATE_ROOT;
+
+    command(
+        'debootstrap',
+        $opts{suite},
+        $VALIDATE_ROOT,
+        $opts{mirror},
+    );
+}
+
+sub run_script {
+    my (%opts) = @_;
+    my @extra_args;
+
+    # cmake won't take --jobs which is a standard for
+    # soapbox build tools - transform it
+    if (defined $opts{jobs}) {
+        push(@extra_args, '-j', $opts{jobs});
+    }
+
+    in_child(sub {
+        # make the validation environment prestine
+        foreach my $env (keys(%ENV)) {
+            delete $ENV{$env};
+        }
+
+        in_validate_root(
+            '/root/soapbox/bin/soapbox-build-debootstrap.chroot',
+            '--target', $opts{target},
+            @extra_args,
+            @ARGV,
+        );
+
+        exit(0);
+    });
+}
+
+sub command {
+    my (@command) = @_;
+
+    CORE::system(
+        @command
+    ) && confess "system(): non-zero exit value";
+
+    return;
+}
+
+sub in_validate_root {
+    my (@command) = @_;
+    our $VALIDATE_ROOT;
+
+    command('/usr/sbin/chroot', $VALIDATE_ROOT, @command);
+    return;
+}
+
+sub in_child {
+    my ($subref) = @_;
+
+    my $pid = fork();
+
+    die "fork(): $!" if $pid == -1;
+
+    # child process
+    unless ($pid) {
+        $subref->();
+        exit 0;
+    }
+
+    waitpid($pid, 0);
+    die "child did not exit cleanly: $?" if $?;
+
+    return;
+}
+
+sub clone_to_validate_root {
+    my ($branch) = @_;
+    our $TEST_ROOT_EXT;
+    my $archive_path = "$TEST_ROOT_EXT/soapbox.tar.gz";
+
+    command('mkdir', '-p', $TEST_ROOT_EXT);
+
+    command(
+        'git', 'archive',
+        '--remote', dirname($0) . '/../',
+        '--verbose',
+        '--format=tar.gz',
+        '-o', $archive_path,
+        $branch,
+    );
+
+    in_child(sub {
+        chdir($TEST_ROOT_EXT) || die "chdir(): $!";
+        command(qw(tar zxvf soapbox.tar.gz));
+    });
+}

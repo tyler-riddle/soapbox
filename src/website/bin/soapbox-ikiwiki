@@ -1,0 +1,6 @@
+#!/usr/bin/env perl
+
+use Soapbox::Perl;
+
+use Soapbox::App::Website::ikiwiki;
+Soapbox::App::Website::ikiwiki->main;

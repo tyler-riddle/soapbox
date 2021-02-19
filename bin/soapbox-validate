@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# bin/soapbox-validate is a defined entry point for the project
+#
+# If this program has an exit value of 0 then the head of the
+# current branch of the repository is considered validated.
+
+# This wrapper script exists to source setupenv.sh if it
+# exists so it can easily be invoked by tools that don't
+# have awareness into Soapbox details
+
+# In the future a full validation run is expected to do more
+# than just test a single branch in one rlease of one flavor
+# of Debian
+
+set -e
+
+if [ "$SOAPBOX_ROOT" == '' ]; then
+    . "$(dirname $0)/../setupenv.sh"
+fi
+
+exec soapbox-validate.pl "$@"

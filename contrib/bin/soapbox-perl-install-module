@@ -1,0 +1,15 @@
+#!/bin/sh
+
+if [ "$SOAPBOX_DPAN_ENABLE" = '' ]; then
+    # the DPAN tooling needs improvement
+    SOAPBOX_DPAN_ENABLE=0
+    export SOAPBOX_DPAN_ENABLE
+fi
+
+if [ "$SOAPBOX_DPAN_ENABLE" = '1' ]; then
+    exec soapbox-dpan-install "$@"
+else
+    exec soapbox-cpan-install "$@"
+fi
+
+exit 1

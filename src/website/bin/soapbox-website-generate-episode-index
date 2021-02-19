@@ -1,0 +1,32 @@
+#!/usr/bin/env perl
+
+use Soapbox::Perl;
+
+use Getopt::Long;
+
+use Soapbox;
+use Soapbox::Website::Generate::EpisodeIndex;
+
+main();
+
+sub main {
+    my %opts = parse_argv();
+    my $soapbox = Soapbox->load($opts{root});
+    my $template = Soapbox::Website::Generate::EpisodeIndex->new;
+
+    print $template->render(
+        episodes => $soapbox->episodes,
+    );
+}
+
+sub parse_argv {
+    my %options;
+
+    GetOptions(
+        "root=s" => \$options{root},
+    );
+
+    die "root is a required argument" unless defined $options{root};
+
+    return %options;
+}

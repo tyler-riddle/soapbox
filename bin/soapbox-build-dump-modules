@@ -1,0 +1,28 @@
+#!/usr/bin/env perl
+
+# This file should work with any perl interpreter
+# so it can be called by things that don't need
+# to have any Soapbox project library directories
+# or other resources
+
+use strict;
+use warnings;
+use v5.10;
+
+main();
+
+sub main {
+    my %modules;
+
+    while(<>) {
+        # skip comments and only whitespace
+        next if m/\s*#?^\s*$/;
+        # strip leading whitespace
+        s/^\s+//;
+
+        my ($name, $version) = split(/\s+/);
+        $modules{$name} = 1;
+    }
+
+    say join(' ', keys %modules);
+}

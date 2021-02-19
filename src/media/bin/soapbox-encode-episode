@@ -1,0 +1,6 @@
+#!/usr/bin/env perl
+
+use Soapbox::Perl;
+
+use Soapbox::App::Media::EncodeEpisode;
+Soapbox::App::Media::EncodeEpisode->main;

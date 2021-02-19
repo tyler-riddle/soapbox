@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" version="2.0">
+<channel>
+    <title>[% channel.name | xml %]</title>
+    <link>[% channel.website.homepage | xml %]></link>
+    <language>en</language>
+    <!-- <itunes:subtitle></itunes:subtitle> -->
+    <itunes:author>[% channel.name | xml %]></itunes:author>
+    <itunes:summary>[% channel.description | xml %]></itunes:summary>
+    <description>[% channel.description | xml %]></description>
+    <itunes:owner>
+        <itunes:name>[% channel.name | xml %]></itunes:name>
+        <itunes:email>[% channel.email | xml %]></itunes:email>
+    </itunes:owner>
+    <itunes:explicit>yes</itunes:explicit>
+    <itunes:image href="[% channel.poster | xml %]" />
+    <itunes:category text="Leisure"/>
+
+[% FOREACH episode = episodes -%]
+[% episode_id = episode.as_id -%]
+[% episode_media = media_locations.$episode_id -%]
+    <item>
+        <title>[% episode.as_id | xml %] [% episode.title | xml %]></title>
+        [% IF episode.synopsis %]<itunes:summary>[% episode.synopsis | xml %]></itunes:summary>[% END %]
+        <description>[% episode.description | xml  %]></description>
+        <link>[% URI.new_abs(episode.file_prefix, channel.website.episodes) | xml %]></link>
+        <!-- <enclosure url="" type="audio/mpeg" length="1024" /> -->
+        <enclosure url="[% episode_media | xml %]" type="audio/mpeg" />
+        <pubDate>[% episode.scheduled | xml %]></pubDate>
+        <itunes:author>[% channel.name | xml %]></itunes:author>
+        <!-- <itunes:duration>00:32:16</itunes:duration> -->
+        <itunes:explicit>yes</itunes:explicit>
+        <guid>[% episode_media | xml %]></guid>
+    </item>
+[% END -%]
+</channel>
+</rss>

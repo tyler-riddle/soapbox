@@ -1,0 +1,49 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use v5.10;
+
+use CPAN::FindDependencies 'finddeps';
+use Data::Dumper;
+
+main();
+
+use constant FILTER_OUT => [
+    qr/\/perl-.+?\.tar\.gz$/,
+];
+
+sub main {
+    my (%seen, %dependencies);
+    my @to_check = @ARGV;
+
+    while(@to_check) {
+        my $check = pop(@to_check);
+
+        next if $seen{$check};
+
+        foreach my $dep (get_distribution_names($check)) {
+            push(@to_check, $dep) unless $seen{$dep};
+            $dependencies{$dep} = 1;
+        }
+    }
+
+    say join("\n", keys %dependencies);
+}
+
+sub get_distribution_names {
+    my ($name) = @_;
+    my @found = grep { filter($_) } finddeps($name);
+    my %unique = map { $_->distribution, 1 } @found;
+    return keys %unique;
+}
+
+sub filter {
+    my ($dep) = @_;
+
+    foreach my $match (@{ FILTER_OUT() }) {
+        return 0 if $dep->distribution =~ /$match/;
+    }
+
+    return 1;
+}

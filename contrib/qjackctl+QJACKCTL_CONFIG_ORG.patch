@@ -1,0 +1,57 @@
+diff -ru qjackctl-0.9.1/src/qjackctlSetup.cpp qjackctl-0.9.1+soapbox/src/qjackctlSetup.cpp
+--- qjackctl-0.9.1/src/qjackctlSetup.cpp	2021-02-05 02:09:04.800510144 -0800
++++ qjackctl-0.9.1+soapbox/src/qjackctlSetup.cpp	2021-02-16 19:15:20.419709285 -0800
+@@ -31,6 +31,8 @@
+ 
+ #include <QApplication>
+ 
++#include <cstdlib>
++
+ #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+ #include <QDesktopWidget>
+ #endif
+@@ -39,10 +41,31 @@
+ #include <jack/jack.h>
+ #endif
+ 
+-
+ // Default (translated) preset name.
+ QString qjackctlSetup::g_sDefName;
+ 
++static const char * get_qsetting_org(void)
++{
++	char * env_p = std::getenv("QJACKCTL_CONFIG_ORG");
++
++	if (env_p == nullptr) {
++		return QJACKCTL_DOMAIN;
++	} else {
++		return env_p;
++	}
++}
++
++static const char * get_qsetting_app(void)
++{
++	char * env_p = std::getenv("QJACKCTL_CONFIG_APP");
++
++	if (env_p == nullptr) {
++		return QJACKCTL_TITLE;
++	} else {
++		return env_p;
++	}
++}
++
+ // Default (translated) preset name. (static)
+ const QString& qjackctlSetup::defName (void)
+ {
+@@ -52,10 +75,9 @@
+ 	return g_sDefName;
+ }
+ 
+-
+ // Constructor.
+ qjackctlSetup::qjackctlSetup (void)
+-	: m_settings(QJACKCTL_DOMAIN, QJACKCTL_TITLE)
++	: m_settings(get_qsetting_org(), get_qsetting_app())
+ {
+ 	bStartJackCmd = false;
+ 

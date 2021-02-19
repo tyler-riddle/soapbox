@@ -1,0 +1,27 @@
+# private author file
+author*
+
+# channel files
+channel/*/var/
+var/*
+
+# Editor detritus and backups
+*~
+*.bak
+*.new
+*.old
+*.orig
+.*.sw[pon]
+.dir-locals.el
+.#*
+\#*
+
+# artifacts from the Soapbox build process
+contrib/distfiles/*
+build/*
+opt/*
+
+# artifacts from Perl module build process
+src/*/blib/*
+src/*/_build/*
+src/*/Build

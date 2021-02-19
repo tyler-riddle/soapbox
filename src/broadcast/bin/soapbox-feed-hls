@@ -1,0 +1,6 @@
+#!/usr/bin/env perl
+
+use Soapbox::Perl;
+
+use Soapbox::App::Broadcast::FeedHLS;
+Soapbox::App::Broadcast::FeedHLS->main;

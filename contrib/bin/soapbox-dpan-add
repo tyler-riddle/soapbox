@@ -1,0 +1,4 @@
+#!/bin/sh
+
+soapbox-dpan-inject "$@" || exit 1
+soapbox-dpan-index

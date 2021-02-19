@@ -1,0 +1,51 @@
+#!/bin/bash --login
+
+# this script is invoked after all the environment variables have been
+# deleted so it needs --login to initialize the environment again
+
+set -e
+
+HOME=/root
+USER=root
+
+DEBIAN_FRONTEND=noninteractive
+LANG=C.UTF-8
+
+export HOME USER DEBIAN_FRONTEND LANG
+
+SOAPBOX_INIT_PACKAGES="build-essential cmake perl liblocal-lib-perl"
+
+if [ "$SOAPBOX_VALIDATE_JOBS" = '' ]; then
+    SOAPBOX_VALIDATE_JOBS=1
+    export SOAPBOX_VALIDATE_JOBS
+fi
+
+echo "UTC" > /etc/timezone || exit 1
+dpkg-reconfigure tzdata || exit 1
+
+echo 'LANG="$LANG"' >/etc/default/locale || exit 1
+apt install --yes locales || exit 1
+update-locale || exit 1
+
+apt update || exit 1
+apt upgrade --yes || exit 1
+apt install --yes ${SOAPBOX_INIT_PACKAGES} || exit 1
+
+cd "/root/soapbox" || exit 1
+
+. setupenv.sh
+
+mkdir -p build/ || exit 1
+cd build/ || exit 1
+
+# nothing should require network access so nothing
+# can access the network
+# FIXME DPAN is needed for this to make sense but the
+# DPAN tooling is not yet ready
+#unshare -n cmake .. || exit 1
+cmake .. || exit 1
+cmake --build . --target install-packages || exit 1
+#unshare -n cmake --build . -j "$SOAPBOX_VALIDATE_JOBS" --target test || exit 1
+cmake --build . "$@" || exit 1
+
+exit 0

@@ -1,0 +1,68 @@
+[% IF episode.title -%]
+# [% episode.title | html %]
+[% END -%]
+
+[% IF by_label.thumbnail -%]
+<img src="[% by_label.thumbnail.location | html %]" height="400" width="600" />
+[% ELSIF by_label.poster -%]
+<img src="[% by_label.poster.location | html %]" height="400" width="600" />
+[% END -%]
+
+[% episode.as_id | html %][% IF episode.scheduled %] [% episode.scheduled | html %][% END %]
+
+[% IF episode.synopsis -%]
+[% episode.synopsis | html %]
+[% ELSIF episode.description -%]
+[% episode.description | html %]
+[% END -%]
+
+[%- IF by_label.mp3 -%]
+ [Listen](#listen)
+[%- END -%]
+[%- IF by_label.x264 -%]
+ [Watch](#watch)
+[%- END -%]
+[%- IF archive -%]
+ [Download](#download)
+[%- END -%]
+[%- IF platforms -%]
+ [Platforms](#platforms)
+[% END -%]
+
+[%- IF by_label.mp3 %]
+<a name="listen">
+## Listen
+
+<audio controls preload="metadata">
+    <source src="[% by_label.mp3.location | html %]"/>
+</audio>
+[%- END %]
+
+[%- IF by_label.x264 %]
+<a name="watch">
+## Watch
+
+<video controls height=720 width=1080 preload="metadata">
+    <source src="[% by_label.x264.location | html %]"/>
+</video>
+[%- END %]
+
+[%- IF archive %]
+<a name="download">
+## Download
+
+[% FOREACH entry = archive -%]
+* [[% entry.label | html %]]([% entry.location | html %])
+[% END -%]
+
+[%- END -%]
+
+[%- IF platforms %]
+<a name="platforms">
+## Platforms
+
+[% FOREACH entry = platforms -%]
+* [[% entry.label | html %]]([% entry.location | html %])
+[% END -%]
+
+[%- END %]

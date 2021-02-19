@@ -1,0 +1,6 @@
+#!/usr/bin/env perl
+
+use Soapbox::Perl;
+
+use Soapbox::Broadcast::App::OBS;
+Soapbox::Broadcast::App::OBS->main;

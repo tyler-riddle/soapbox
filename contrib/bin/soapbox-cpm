@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+PERL_MODULE_LOCK="${SOAPBOX_VAR}/run/perlmodules.lck"
+
+# build targets running in parallel might wind up installing
+# modules as a part of their operation.
+mkdir -p "$(dirname $PERL_MODULE_LOCK)"
+exec 100>"${PERL_MODULE_LOCK}" || exit 1
+flock 100 || exit 1
+trap "rm -f ${PERL_MODULE_LOCK}" EXIT
+
+if [ "$SOAPBOX_TEST_PERL_MODULES" = 1 ]; then
+    TEST_ARGS=--test
+fi
+
+exec cpm "$1" --no-show-progress --no-prebuilt --show-build-log-on-failure --global $TEST_ARGS "${@:2}"

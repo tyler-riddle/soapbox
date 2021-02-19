@@ -1,0 +1,2 @@
+File::Slurp 9999.32
+Getopt::Long 2.52

@@ -1,0 +1,65 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use v5.10;
+
+use File::Basename 'dirname';
+use Getopt::Long;
+
+main();
+
+sub main {
+    my (%opts) = parse_argv();
+    my $tag_name = "v$opts{version}";
+    my $branch_name = "release/$opts{version}";
+
+    die "must be run from inside the Soapbox git repository" unless -d ".git" && -e ".soapbox";
+
+    my @validate_args;
+    push(@validate_args, '-j', $opts{jobs}) if defined $opts{jobs};
+    push(@validate_args, '--purge') if defined $opts{purge};
+    push(@validate_args, '--clean') if defined $opts{clean};
+
+    system(
+        "sudo",
+        dirname($0) . "/soapbox-validate",
+        '--branch', $branch_name,
+        '--root', $opts{root},
+        @validate_args,
+    ) and die "validation failed";
+
+    my @git_args;
+
+    if (defined $opts{message}) {
+        push(@git_args, '-m', $opts{message});
+    }
+
+    system(
+        "git",
+        "tag",
+        "-a",
+        '-m', "release $opts{version}",
+        $tag_name,
+        $branch_name,
+    ) and die "git failed";
+
+    exit 0;
+}
+
+sub parse_argv {
+    my %opts;
+
+    GetOptions(
+        'version=s' => \$opts{version},
+        'jobs|j=i' => \$opts{jobs},
+        'root=s' => \$opts{root},
+        'purge' => \$opts{purge},
+        'clean' => \$opts{clean},
+    ) or die "invalid arguments";
+
+    die "version is a required argument" unless defined $opts{version};
+    die "root is a required argument" unless defined $opts{root};
+
+    return %opts;
+}

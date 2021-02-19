@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -e
+# set -x
+
+declare -a INJECT_QUEUE
+
+function main {
+    for module in "$@"; do
+        echo "Getting dependencies for $module"
+
+        for i in $(soapbox-cpan-deps "$module"); do
+            queue_injection "http://cpan.metacpan.org/authors/id/$i"
+        done
+    done
+
+    echo -n "${INJECT_QUEUE[@]}" | xargs -P 5 -d ' ' -I'{}' -n 1 orepan2-inject --no-generate-index '{}' "$SOAPBOX_DPAN"
+}
+
+function queue_injection {
+    local module="$1"
+
+    if [[ " ${INJECT_QUEUE[@]} " =~ " $module " ]]; then
+        return 0
+    fi
+
+    INJECT_QUEUE+=("$module")
+
+    return 0
+}
+
+main "$@"

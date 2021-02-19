@@ -1,0 +1,14 @@
+# Episodes
+
+[% FOREACH episode = episodes -%]
+## [% episode.title | html %]
+
+[[% episode.as_id %] [% episode.scheduled %]]([% URI.new_abs(episode.file_prefix, episode.instance.channel.website.episodes) %])
+
+[% IF episode.synopsis -%]
+[% episode.synopsis | html %]
+[%- ELSIF episode.description -%]
+[% episode.description | html %]
+[% END -%]
+
+[% END -%]
