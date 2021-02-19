@@ -1,14 +1,14 @@
+[% SET channel = instance.channel -%]
+[% IF channel -%] [%- SET website = channel.website -%] [%- END -%]
+[% IF website -%] [%- SET website_episodes = website.episodes -%] [%- END -%]
+
 # Episodes
 
-[% FOREACH episode = episodes -%]
-## [% episode.title | html %]
-
-[[% episode.as_id %] [% episode.scheduled %]]([% URI.new_abs(episode.file_prefix, episode.instance.channel.website.episodes) %])
-
-[% IF episode.synopsis -%]
-[% episode.synopsis | html %]
-[%- ELSIF episode.description -%]
-[% episode.description | html %]
+[% FOREACH episode = instance.episodes -%]
+[% IF website_episodes -%]
+[% SET episode_url = URI.new_abs(episode.file_prefix, website_episodes) %]
+* [% episode.scheduled | html %] [[% episode.as_string | html %]]([% episode_url %])
+[% ELSE -%]
+* [% episode.scheduled | html %] [% episode.as_string | html %]
 [% END -%]
-
 [% END -%]

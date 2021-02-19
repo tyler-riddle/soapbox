@@ -2,39 +2,48 @@ package Soapbox::App::Website::GenerateEpisode;
 
 use Soapbox::Moose;
 
-use Getopt::Long;
-
 use Soapbox;
 use Soapbox::Website::Generate::Episode;
 
-sub main {
+extends 'Soapbox::Instance::App';
+
+sub _make_arg_spec {
     my ($package) = @_;
-    my %opts = $package->parse_argv;
-    my $soapbox = Soapbox->load($opts{root});
-    my $episode = $soapbox->get_episode($opts{episode});
+    return (
+        $package->SUPER::_make_arg_spec,
+        'episode' => ['episode=s', $ENV{SOAPBOX_EPISODE_ID}],
+    );
+}
+
+sub _validate_argv {
+    my ($package, %opts) = @_;
+
+    $package->SUPER::_validate_argv(%opts);
+
+    die "episode is a required argument" unless defined $opts{episode};
+
+    return;
+}
+
+sub get_archives {
+    my ($self, $episode) = @_;
+    my $archive = $self->instance->archive;
+
+    return () unless $archive->episodes;
+    return values %{ $self->instance->archive->episodes->{$episode->as_id} };
+}
+
+sub run {
+    my ($self, %opts) = @_;
+    my $episode = $self->instance->get_episode($opts{episode});
     my $episode_id = $episode->as_id;
-    my @archives = values %{ $soapbox->archive->episodes->{$episode_id} };
+    my @archives = $self->get_archives($episode);
     my $episode_template = Soapbox::Website::Generate::Episode->new;
 
     print $episode_template->render(
         episode => $episode,
         archive => \@archives,
     );
-}
-
-sub parse_argv {
-    my ($package) = @_;
-    my %opts;
-
-    GetOptions(
-        'root=s' => \$opts{root},
-        "episode" => 'episode=s',
-    );
-
-    die "root is a required argument" unless defined $opts{root};
-    die "episode is a required argument" unless defined $opts{episode};
-
-    return %opts;
 }
 
 __PACKAGE__->meta->make_immutable;

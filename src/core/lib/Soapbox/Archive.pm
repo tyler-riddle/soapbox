@@ -72,7 +72,10 @@ marshaled episodes => (
 
 sub _build_url {
     my ($self) = @_;
-    return $self->instance->get_platform(ARCHIVE_PLATFORM_NAME)->media;
+    my $platform = $self->instance->get_platform(ARCHIVE_PLATFORM_NAME);
+
+    return undef unless defined $platform;
+    return $platform->media;
 }
 
 __PACKAGE__->meta->make_immutable;

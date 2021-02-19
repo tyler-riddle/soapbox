@@ -1,6 +1,4 @@
-[% IF episode.title -%]
-# [% episode.title | html %]
-[% END -%]
+# [% episode.as_string | html %]
 
 [% IF by_label.thumbnail -%]
 <img src="[% by_label.thumbnail.location | html %]" height="400" width="600" />
@@ -8,7 +6,7 @@
 <img src="[% by_label.poster.location | html %]" height="400" width="600" />
 [% END -%]
 
-[% episode.as_id | html %][% IF episode.scheduled %] [% episode.scheduled | html %][% END %]
+[% IF episode.scheduled %] [% episode.scheduled | html %][% END -%]
 
 [% IF episode.synopsis -%]
 [% episode.synopsis | html %]

@@ -75,4 +75,9 @@ sub as_id {
     return $self->number;
 }
 
+sub as_string {
+    my ($self) = @_;
+    return $self->as_id . ' ' . $self->title;
+}
+
 __PACKAGE__->meta->make_immutable;

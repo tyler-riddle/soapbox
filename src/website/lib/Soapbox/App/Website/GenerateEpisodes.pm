@@ -9,14 +9,33 @@ use Soapbox;
 use Soapbox::Type;
 use Soapbox::Website::Generate::Episode;
 
-sub main {
-    my ($package) = @_;
-    my %opts = $package->parse_argv;
-    my $soapbox = Soapbox->load($opts{root});
+extends 'Soapbox::Instance::App';
 
-    foreach my $episode (@{ $soapbox->episodes }) {
+sub _make_arg_spec {
+    my ($package) = @_;
+    return (
+        $package->SUPER::_make_arg_spec,
+        'outdir' => 'outdir=s',
+    );
+}
+
+sub _validate_argv {
+    my ($package, %opts) = @_;
+
+    $package->SUPER::_validate_argv(%opts);
+
+    die "outdir is a required argument" unless defined $opts{outdir};
+
+    return;
+}
+
+sub run {
+    my ($self, %opts) = @_;
+    my $instance = $self->instance;
+
+    foreach my $episode (@{ $instance->episodes }) {
         my $episode_id = $episode->as_id;
-        my @archives = values %{ $soapbox->archive->episodes->{$episode_id} };
+        my @archives = values %{ $instance->archive->episodes->{$episode_id} };
         my $episode_template = Soapbox::Website::Generate::Episode->new;
         my $filename = file($opts{outdir}, $episode->file_prefix . '.md');
 
@@ -25,20 +44,6 @@ sub main {
             archive => \@archives,
         )) or die "write_file($filename): $!";
     }
-}
-
-sub parse_argv {
-    my %options;
-
-    GetOptions(
-        "root=s" => \$options{root},
-        "outdir" => 'outdir=s',
-    );
-
-    die "root is a required argument" unless defined $options{root};
-    die "outdir is a required argument" unless defined $options{outdir};
-
-    return %options;
 }
 
 __PACKAGE__->meta->make_immutable;
