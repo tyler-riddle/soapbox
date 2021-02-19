@@ -179,3 +179,34 @@ ExternalProject_Add(
     BUILD_COMMAND $(MAKE)
     INSTALL_COMMAND install -D -t ${CMAKE_INSTALL_PREFIX}/sbin objs/nginx
 )
+
+list(
+    APPEND SOAPBOX_CONTRIB_ZAM_PLUGINS_PACKAGES
+    libx11-dev libgl-dev liblo-dev libjack-jackd2-dev ladspa-sdk libsamplerate0-dev libfftw3-dev nasm
+)
+
+add_custom_target(
+    contrib-zam-plugins-install-packages
+    COMMAND ${SOAPBOX_CONTRIB_APT_INSTALL} ${SOAPBOX_CONTRIB_ZAM_PLUGINS_PACKAGES}
+)
+
+add_dependencies(contrib-install-packages contrib-zam-plugins-install-packages)
+
+set(SOAPBOX_CONTRIB_ZAM_PLUGINS_VERSION 3.14)
+set(SOAPBOX_CONTRIB_ZAM_PLUGINS_HASH 4a73a73fa03cc6d7faf2d65840349d2a33e7aaef5a13c6345f534b6c434e7b42)
+
+
+ExternalProject_Add(
+    contrib-zam-plugins
+
+    URL https://github.com/zamaudio/zam-plugins/archive/${SOAPBOX_CONTRIB_ZAM_PLUGINS_VERSION}.tar.gz
+    DOWNLOAD_NAME zam-plugins-${SOAPBOX_CONTRIB_ZAM_PLUGINS_VERSION}.tar.gz
+    DOWNLOAD_DIR ${SOAPBOX_DISTFILES}
+    URL_HASH SHA256=${SOAPBOX_CONTRIB_ZAM_PLUGINS_HASH}
+
+    BUILD_IN_SOURCE ON
+    PATCH_COMMAND tar zxvf ${SOAPBOX_CONTRIB}/dpf-08669d1.tar.gz
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND PREFIX=${CMAKE_INSTALL_PREFIX} $(MAKE)
+    INSTALL_COMMAND PREFIX=${CMAKE_INSTALL_PREFIX} $(MAKE) install
+)
