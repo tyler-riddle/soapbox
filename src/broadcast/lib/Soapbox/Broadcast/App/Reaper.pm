@@ -11,8 +11,8 @@ const our $REAPER_BIN => 'reaper';
 
 sub run {
     my ($self) = @_;
-    my $conf_dir = dir($self->instance->root, '/etc/REAPER/config.ini');
-    my @extra_args = ('-cfgfile', $conf_dir);
+    my $conf_file = file($self->instance->private_config_path, 'REAPER', 'config.ini');
+    my @extra_args = ('-cfgfile', $conf_file);
 
     chdir($self->instance->root);
     CORE::exec($REAPER_BIN, @extra_args, @ARGV);
