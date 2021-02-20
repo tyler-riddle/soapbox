@@ -115,6 +115,39 @@ ExternalProject_Add(
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
 )
 
+set(SOAPBOX_CONTRIB_OBS_GSTREAMER_VERSION 0.3.0)
+set(SOAPBOX_CONTRIB_OBS_GSTREAMER_HASH 0dc6c67391fa878598d3aed35b55240eec183a38272e7744b47fcff8ddccb491)
+set(SOAPBOX_CONTRIB_OBS_GSTREAMER_DOWNLOAD v${SOAPBOX_CONTRIB_OBS_GSTREAMER_VERSION}.tar.gz)
+set(SOAPBOX_CONTRIB_OBS_GSTREAMER_STORE obs-gstreamer-${SOAPBOX_CONTRIB_OBS_GSTREAMER_DOWNLOAD})
+list(APPEND SOAPBOX_CONTRIB_OBS_GSTREAMER_PACKAGES meson)
+
+add_custom_target(
+    contrib-obs-gstreamer-install-packages
+    COMMAND ${SOAPBOX_CONTRIB_APT_INSTALL} ${SOAPBOX_CONTRIB_OBS_STUDIO_PACKAGES}
+)
+
+add_dependencies(contrib-install-packages contrib-obs-gstreamer-install-packages)
+
+ExternalProject_Add(
+    contrib-obs-gstreamer
+    DEPENDS contrib-obs-studio
+
+    DOWNLOAD_DIR ${SOAPBOX_DISTFILES}
+    DOWNLOAD_NAME ${SOAPBOX_CONTRIB_OBS_GSTREAMER_STORE}
+    URL https://github.com/fzwoch/obs-gstreamer/archive/${SOAPBOX_CONTRIB_OBS_GSTREAMER_DOWNLOAD}
+    URL_HASH SHA256=${SOAPBOX_CONTRIB_OBS_GSTREAMER_HASH}
+
+    BUILD_IN_SOURCE ON
+    CONFIGURE_COMMAND CFLAGS=-I${CMAKE_INSTALL_PREFIX}/include LDFLAGS=-L${CMAKE_INSTALL_PREFIX}/lib meson configure
+    BUILD_COMMAND CFLAGS=-I${CMAKE_INSTALL_PREFIX}/include LDFLAGS=-L${CMAKE_INSTALL_PREFIX}/lib meson --buildtype=release build && CFLAGS=-I${CMAKE_INSTALL_PREFIX}/include LDFLAGS=-L${CMAKE_INSTALL_PREFIX}/lib ninja -C build
+    INSTALL_COMMAND cp build/obs-gstreamer.so ${CMAKE_INSTALL_PREFIX}/lib/obs-plugins/
+)
+
+add_custom_target(
+    contrib-obs
+    DEPENDS contrib-obs-studio contrib-obs-gstreamer
+)
+
 ExternalProject_Add(
     contrib-reaper
 
