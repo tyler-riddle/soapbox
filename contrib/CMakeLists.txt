@@ -27,8 +27,8 @@ ExternalProject_Add(
     DEPENDS contrib-perl
 
     DOWNLOAD_DIR ${SOAPBOX_DISTFILES}
-    URL https://download.imagemagick.org/ImageMagick/download/ImageMagick-7.0.11-0.tar.xz
-    URL_HASH SHA256=ef49558c7d2648d3001306b1e65c542acab6476a24fcbd275beae6240576c0ac
+    URL http://deb.debian.org/debian/pool/main/i/imagemagick/imagemagick_6.9.11.60+dfsg.orig.tar.xz
+    URL_HASH SHA256=472fb516df842ee9c819ed80099c188463b9e961303511c36ae24d0eaa8959c4
 
     BUILD_IN_SOURCE ON
     CONFIGURE_COMMAND soapbox-contrib-imagemagick-configure ./configure --prefix=${CMAKE_INSTALL_PREFIX} --with-perl
