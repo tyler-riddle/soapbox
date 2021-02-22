@@ -228,9 +228,22 @@ add_dependencies(contrib-install-packages contrib-zam-plugins-install-packages)
 set(SOAPBOX_CONTRIB_ZAM_PLUGINS_VERSION 3.14)
 set(SOAPBOX_CONTRIB_ZAM_PLUGINS_HASH 4a73a73fa03cc6d7faf2d65840349d2a33e7aaef5a13c6345f534b6c434e7b42)
 
+ExternalProject_Add(
+    contrib-dpf-08669d1
+
+    URL https://github.com/DISTRHO/DPF/archive/08669d1.tar.gz
+    DOWNLOAD_NAME dpf-08669d1.tar.gz
+    DOWNLOAD_DIR ${SOAPBOX_DISTFILES}
+    URL_HASH SHA256=c4359020d1defb7ae2547b5dbdc0cf33f6e0e9cdd3ef75300533b4c4c9f1b9f4
+
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+)
 
 ExternalProject_Add(
     contrib-zam-plugins
+    DEPENDS contrib-dpf-08669d1
 
     URL https://github.com/zamaudio/zam-plugins/archive/${SOAPBOX_CONTRIB_ZAM_PLUGINS_VERSION}.tar.gz
     DOWNLOAD_NAME zam-plugins-${SOAPBOX_CONTRIB_ZAM_PLUGINS_VERSION}.tar.gz
@@ -238,7 +251,7 @@ ExternalProject_Add(
     URL_HASH SHA256=${SOAPBOX_CONTRIB_ZAM_PLUGINS_HASH}
 
     BUILD_IN_SOURCE ON
-    PATCH_COMMAND tar zxvf ${SOAPBOX_CONTRIB}/dpf-08669d1.tar.gz
+    PATCH_COMMAND tar zxvf ${SOAPBOX_DISTFILES}/dpf-08669d1.tar.gz && ln -sf DPF-08669d1bc30c6e971fde800eade4ca40104ba8b2 dpf
     CONFIGURE_COMMAND ""
     BUILD_COMMAND PREFIX=${CMAKE_INSTALL_PREFIX} $(MAKE)
     INSTALL_COMMAND PREFIX=${CMAKE_INSTALL_PREFIX} $(MAKE) install
